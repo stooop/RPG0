@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3 uid="uid://b08kvtd887tvg"]
+
+[ext_resource type="Script" path="res://example/example_combat.gd" id="1_dagpt"]
+
+[node name="ExampleCombatScene" type="Node2D"]
+script = ExtResource("1_dagpt")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="PlayerCharacterDisplayContainer" type="HBoxContainer" parent="CanvasLayer"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -48.0
+offset_bottom = -48.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="OpponentCharacterDisplayContainer" type="HBoxContainer" parent="CanvasLayer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 40.0
+offset_bottom = 40.0
+grow_horizontal = 2
+alignment = 1
