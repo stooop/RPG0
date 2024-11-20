@@ -30,17 +30,17 @@ func _physics_process(_delta: float) -> void:
 	# If no one is ready, tick all combatants
 	combat_tick += 1
 	for character in combatants:
-		character.action_points += 1 # TODO: Add a way to prevent gaining AP for death and stuns
+		character.tick()
 
 # Start combat with characters added previously and/or passed to this function
 func start_combat(characters: Array[RpgCharacter] = []) -> void:
-	assert(!is_combat_active)
+	assert(!is_combat_active, "Combat is already active")
 	is_combat_active = true
 	do_ticks = true
 	combat_tick = 0
 	
 	add_combatants(characters)
-	assert(!combatants.is_empty()) # You should always have combatants, if needed you can call add_new_combatant() before start_combat()
+	assert(!combatants.is_empty(), "Cannot start combat without combatants") # if needed you can call add_new_combatant() before start_combat()
 	
 	_sort_characters_by_speed(combatants)
 	
@@ -48,13 +48,13 @@ func start_combat(characters: Array[RpgCharacter] = []) -> void:
 
 # Stop the active combat, make sure to call end_combat() after
 func finalize_combat(winning_team: RpgEnums.Team) -> void:
-	assert(is_combat_active)
+	assert(is_combat_active, "No combat is active to finalize")
 	is_combat_active = false
 	combat_finalized.emit(winning_team)
 
 # Reset combat state for next combat
 func end_combat() -> void:
-	assert(!is_combat_active)
+	assert(!is_combat_active, "Combat must be finalized before ending")
 	combat_tick = 0
 	for character in combatants:
 		character.action_points = 0

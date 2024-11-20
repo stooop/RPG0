@@ -27,13 +27,13 @@ func _init() -> void:
 
 # Connected in RpgCharacter.add_new_combat_resource()
 func _on_bound_max_changed(new_value: float) -> void:
-	assert(new_value <= absolute_max)
+	assert(new_value <= absolute_max, "Absolute max should be higher than the bound stat")
 	_current_max = new_value
 	current_value = current_value # Looks silly but need to re-clamp
 
 # Connected in RpgCharacter.add_new_combat_resource()
 func _on_bound_min_changed(new_value: float) -> void:
-	assert(new_value >= absolute_min)
+	assert(new_value >= absolute_min, "Absolute min should be lower than the bound stat")
 	_current_min = new_value
 	current_value = current_value # Looks silly but need to re-clamp
 

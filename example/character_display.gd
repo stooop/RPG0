@@ -11,7 +11,7 @@ extends Control
 @onready var cancel_targeting_button: Button = $ButtonContainers/Targeting/CancelTargetingButton
 @onready var main_panel_container: PanelContainer = $MainPanelContainer
 
-signal started_targeting_mode(skill: ExampleSkill, source: ExampleCharacter)
+signal started_targeting_mode(skill: ExampleSkill)
 signal canceled_targeting_mode
 signal main_panel_clicked
 
@@ -29,7 +29,7 @@ func _physics_process(_delta: float) -> void:
 		return
 	
 	name_label.text = character.name
-	hp_value_label.text = "%d/%d" % [character.get_combat_resource(&"health").current_value, character.get_stat(&"max_health").base_value] # TODO: Use modified value
+	hp_value_label.text = "%d/%d" % [character.get_combat_resource(&"health").current_value, character.get_stat(&"max_health").get_modified_value()]
 	ap_value_label.text = "%d/%d" % [character.action_points, character.get_action_point_threshold()]
 
 func _on_turn_started() -> void:
@@ -54,12 +54,13 @@ func _on_skills_button_pressed() -> void:
 	for skill in character.skills:
 		var button = Button.new()
 		button.text = skill.name
+		button.tooltip_text = skill.get_interpolated_description()
 		button.pressed.connect(func(): _start_targeting_mode(skill))
 		skill_buttons_container.add_child(button)
 
 func _start_targeting_mode(skill: ExampleSkill) -> void:
 	button_containers.current_tab = 2
-	started_targeting_mode.emit(skill, character)
+	started_targeting_mode.emit(skill)
 
 func _cancel_targeting_mode() -> void:
 	button_containers.current_tab = 1

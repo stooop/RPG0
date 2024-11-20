@@ -7,5 +7,11 @@ func add_default_stats() -> ExampleCharacter:
 	return self
 
 func add_default_combat_resources() -> ExampleCharacter:
-	add_new_combat_resource(&"health", get_stat(&"max_health").base_value) # TODO: Use modified value
+	add_new_combat_resource(&"health", get_stat(&"max_health").get_modified_value())
 	return self
+
+func can_take_turn() -> bool:
+	return super() and !get_status_effect(&"silenced")
+
+func can_gain_action_points() -> bool:
+	return super() and !get_status_effect(&"stunned")

@@ -4,9 +4,17 @@ func _init(t: int = 1) -> void:
 	super(&"slash", t)
 	target_type = TargetType.ONE_ENEMY
 
-func use(source: RpgCharacter, targets: Array[RpgCharacter]) -> void:
-	super.use(source, targets)
+func use(targets: Array[RpgCharacter]) -> void:
+	super.use(targets)
 	
-	var damage = maxi(floori(source.get_stat(&"attack").base_value) + randi_range(-5, 5 * tier), 1)
+	assert(targets.size() == 1)
+	
+	var damage = randi_range(get_damage_floor(), get_damage_ceiling())
 	targets.front().modify_hp(-damage)
-	source.end_turn()
+	user.end_turn()
+
+func get_damage_floor() -> int:
+	return maxi(floori(user.get_stat(&"attack").get_modified_value()) - 5, 1)
+
+func get_damage_ceiling() -> int:
+	return floori(user.get_stat(&"attack").get_modified_value()) + (5 * tier)

@@ -11,17 +11,23 @@ var order: int # Used for some sorting. Generally meant to represent party posit
 var stats: Array[RpgStat] = []
 var combat_resources: Array[RpgCombatResource] = []
 var skills: Array[RpgSkill] = []
+var status_effects: Array[RpgStatusEffect] = []
 var action_points: int
 
 signal turn_started # Fires after RpgGameState.turn_started
 signal turn_ended
 signal used_skill(skill: RpgSkill, targets: Array[RpgCharacter]) # Fires after RpgSkill.used
 
-func get_action_point_threshold() -> int:
-	return (60 * RpgConstants.base_speed) / get_speed()
+func tick() -> void:
+	for effect in status_effects:
+		effect.tick()
+	if can_gain_action_points():
+		action_points += 1
 
 # Can be overridden to handle a character's turn starting, e.g. with UI
 func start_turn() -> void:
+	for effect in status_effects:
+		effect.on_turn_start()
 	turn_started.emit()
 
 # Call this after a character's turn is over
@@ -38,6 +44,10 @@ func is_dead() -> bool:
 func can_take_turn() -> bool:
 	return !is_dead() and action_points >= get_action_point_threshold()
 
+# Can be overriden for a "stun" status effect
+func can_gain_action_points() -> bool:
+	return !is_dead()
+
 func add_combat_resource(resource: RpgCombatResource) -> RpgCharacter:
 	combat_resources.push_back(resource)
 	return self
@@ -53,7 +63,8 @@ func add_new_combat_resource(id: StringName, initial_value: float) -> RpgCharact
 
 func get_combat_resource(id: StringName) -> RpgCombatResource:
 	var matching = combat_resources.filter(func(x): return x.id == id)
-	assert(matching.size() == 1) # If you have multiple resources of the same type on a character, you will need to use another method to retrieve it
+	if matching.is_empty():
+		return null
 	return matching.front()
 
 func add_stat(stat: RpgStat) -> RpgCharacter:
@@ -63,15 +74,17 @@ func add_stat(stat: RpgStat) -> RpgCharacter:
 func add_new_stat(id: StringName) -> RpgCharacter:
 	var stat = RpgRegistry.get_stat(id)
 	stat.base_value = base_stats[id]
-	assert(stat.base_value <= stat.max_value and stat.base_value >= stat.min_value)
+	assert(stat.base_value <= stat.max_value and stat.base_value >= stat.min_value, "New stat's base value is not within bounds")
 	return add_stat(stat)
 
 func get_stat(id: StringName) -> RpgStat:
 	var matching = stats.filter(func(x): return x.id == id)
-	assert(matching.size() == 1)
+	if matching.is_empty():
+		return null
 	return matching.front()
 
 func add_skill(skill: RpgSkill) -> RpgCharacter:
+	skill.user = self
 	skills.push_back(skill)
 	skill.used.connect(func(source, targets): used_skill.emit(skill, targets))
 	return self
@@ -83,18 +96,46 @@ func add_new_skill(id: StringName, tier: int) -> RpgCharacter:
 
 func get_skill(id: StringName) -> RpgSkill:
 	var matching = skills.filter(func(x): return x.id == id)
-	assert(matching.size() == 1)
+	if matching.is_empty():
+		return null
 	return matching.front()
 
 func get_skill_by_tier(id: StringName, tier: int) -> RpgSkill:
 	var matching = skills.filter(func(x): return x.id == id and x.tier == tier)
-	assert(matching.size() == 1)
+	if matching.is_empty():
+		return null
 	return matching.front()
+
+func add_status_effect(status_effect: RpgStatusEffect) -> RpgCharacter:
+	var existing = get_status_effect(status_effect.id)
+	if !existing:
+		status_effects.push_back(status_effect)
+		if status_effect.stacks == 0:
+			status_effect.stacks = 1
+		status_effect.applied_to = self
+		status_effect.apply()
+	else:
+		existing.modify_stacks(status_effect.stacks)
+	return self
+
+func get_status_effect(id: StringName) -> RpgStatusEffect:
+	var matching = status_effects.filter(func(x): return x.id == id)
+	if matching.is_empty():
+		return null
+	return matching.front()
+
+func remove_status_effect(id: StringName) -> void:
+	var matching = get_status_effect(id)
+	assert(matching, "Tried to remove a nonexistent status effect %s" % id)
+	status_effects.remove_at(status_effects.find(matching))
 
 # Heal or damage, override this if you use a different combat resource ID for HP or to add logic for resistances, etc.
 func modify_hp(amount: int) -> void:
-	get_combat_resource("health").current_value += amount
+	get_combat_resource(&"health").current_value += amount
 
 # Fast way to get a character's speed for turn order purposes, can also be overriden if you don't want to use a speed stat
 func get_speed() -> float:
-	return get_stat(&"speed").base_value # TODO: Use modified stat
+	return get_stat(&"speed").get_modified_value()
+
+func get_action_point_threshold() -> int:
+	return (60 * RpgConstants.base_speed) / get_speed()

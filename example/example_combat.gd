@@ -6,7 +6,6 @@ const character_display_scene: PackedScene = preload("res://example/character_di
 @onready var opponent_character_display_container: HBoxContainer = $CanvasLayer/OpponentCharacterDisplayContainer
 
 var _targeting_mode_skill: ExampleSkill
-var _targeting_mode_source: ExampleCharacter
 
 signal stopped_targeting_mode
 
@@ -48,13 +47,11 @@ func _create_ui() -> void:
 		display.main_panel_clicked.connect(func(): _on_character_display_clicked(character))
 		opponent_character_display_container.add_child(display)
 
-func _start_targeting_mode(skill: ExampleSkill, source: ExampleCharacter) -> void:
+func _start_targeting_mode(skill: ExampleSkill) -> void:
 	_targeting_mode_skill = skill
-	_targeting_mode_source = source
 
 func _stop_targeting_mode() -> void:
 	_targeting_mode_skill = null
-	_targeting_mode_source = null
 	stopped_targeting_mode.emit()
 
 func _on_character_display_clicked(character: ExampleCharacter) -> void:
@@ -63,12 +60,12 @@ func _on_character_display_clicked(character: ExampleCharacter) -> void:
 	
 	match _targeting_mode_skill.target_type:
 		ExampleSkill.TargetType.ONE_ENEMY:
-			if character.team != _targeting_mode_source.team:
-				_targeting_mode_skill.use(_targeting_mode_source, [character])
+			if character.team != _targeting_mode_skill.user.team:
+				_targeting_mode_skill.use([character])
 				_stop_targeting_mode()
 		ExampleSkill.TargetType.ONE_ALLY:
-			if character.team == _targeting_mode_source.team:
-				_targeting_mode_skill.use(_targeting_mode_source, [character])
+			if character.team == _targeting_mode_skill.user.team:
+				_targeting_mode_skill.use([character])
 				_stop_targeting_mode()
 		_:
 			assert(false)
@@ -76,7 +73,7 @@ func _on_character_display_clicked(character: ExampleCharacter) -> void:
 func _on_opponent_turn_started(character: ExampleCharacter) -> void:
 	var skill = character.skills.pick_random()
 	var targets: Array[RpgCharacter] = [RpgGameState.get_combatants(RpgEnums.Team.PLAYER).pick_random()]
-	skill.use(character, targets)
+	skill.use(targets)
 
 func _register_static_data() -> void:
 	# Normally this would be done in an autoload script and use resource files, JSON, etc
@@ -124,4 +121,37 @@ func _register_static_data() -> void:
 	var slash_data = RpgSkill.new()
 	slash_data.id = &"slash"
 	slash_data.name = "Slash"
+	slash_data.description = "Attack one enemy for {get_damage_floor()}-{get_damage_ceiling()} damage."
 	RpgRegistry.register_skill(slash_data)
+	
+	var poisoned_data = RpgStatusEffect.new()
+	poisoned_data.id = &"poisoned"
+	poisoned_data.name = "Poisoned"
+	poisoned_data.description = "Each stack deals 1 damage every {TICKS_BETWEEN_DAMAGE} ticks {TOTAL_PROCS} times."
+	poisoned_data.is_negative = true
+	poisoned_data.max_stacks = 99
+	RpgRegistry.register_status_effect(poisoned_data)
+	
+	var slowed_data = RpgStatusEffect.new()
+	slowed_data.id = &"slowed"
+	slowed_data.name = "Slowed"
+	slowed_data.description = "Each stack reduces speed by {SLOW_AMOUNT * 100}% for 1 turn."
+	slowed_data.is_negative = true
+	slowed_data.max_stacks = 5
+	RpgRegistry.register_status_effect(slowed_data)
+	
+	var silenced_data = RpgStatusEffect.new()
+	silenced_data.id = &"silenced"
+	silenced_data.name = "Silenced"
+	silenced_data.description = "Cannot take a turn for {DURATION} ticks."
+	silenced_data.is_negative = true
+	silenced_data.max_stacks = 1
+	RpgRegistry.register_status_effect(silenced_data)
+	
+	var stunned_data = RpgStatusEffect.new()
+	stunned_data.id = &"stunned"
+	stunned_data.name = "Stunned"
+	stunned_data.description = "Cannot gain AP for {DURATION} ticks."
+	stunned_data.is_negative = true
+	stunned_data.max_stacks = 1
+	RpgRegistry.register_status_effect(stunned_data)
