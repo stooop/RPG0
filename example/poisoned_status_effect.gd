@@ -1,25 +1,26 @@
-class_name PoisionedStatusEffect extends RpgTypedStatusEffect
+class_name PoisionedStatusEffect extends RpgStatusEffect
 
-const TICKS_BETWEEN_DAMAGE: int = 50
-const TOTAL_PROCS: int = 5
+@export var ticks_between_damage: int
+@export var total_procs: int
 
-var _ticks_until_damage: int = TICKS_BETWEEN_DAMAGE
-var _procs_remaining: int = TOTAL_PROCS
+var _ticks_until_damage: int
+var _procs_remaining: int
 
-func _init(initial_stacks: int) -> void:
-	super(&"poisoned", initial_stacks)
+func apply() -> void:
+	_ticks_until_damage = ticks_between_damage
+	_procs_remaining = total_procs
 
 func modify_stacks(s: int) -> void:
 	super(s)
-	_ticks_until_damage = TICKS_BETWEEN_DAMAGE
-	_procs_remaining = TOTAL_PROCS
+	_ticks_until_damage = ticks_between_damage
+	_procs_remaining = total_procs
 
 func tick() -> void:
 	_ticks_until_damage -= 1
 	if _ticks_until_damage <= 0:
 		applied_to.modify_hp(-stacks)
 		_procs_remaining -= 1
-		_ticks_until_damage = TICKS_BETWEEN_DAMAGE
+		_ticks_until_damage = ticks_between_damage
 	
 	if _procs_remaining <= 0:
 		remove()

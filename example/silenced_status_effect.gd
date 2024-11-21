@@ -1,15 +1,12 @@
-class_name SilencedStatusEffect extends RpgTypedStatusEffect
+class_name SilencedStatusEffect extends RpgStatusEffect
 
-const DURATION: int = 40
+@export var duration: int
 
 var _ticks: int = 0
 
-func _init() -> void:
-	super(&"silenced", 1)
-
 func tick() -> void:
 	_ticks += 1
-	if _ticks >= DURATION:
+	if _ticks >= duration:
 		remove()
 
 func modify_stacks(s: int) -> void:

@@ -1,9 +1,5 @@
 class_name SlashSkill extends ExampleSkill
 
-func _init(t: int = 1) -> void:
-	super(&"slash", t)
-	target_type = TargetType.ONE_ENEMY
-
 func use(targets: Array[RpgCharacter]) -> void:
 	super.use(targets)
 	

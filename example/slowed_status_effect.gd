@@ -1,16 +1,13 @@
-class_name SlowedStatusEffect extends RpgTypedStatusEffect
+class_name SlowedStatusEffect extends RpgStatusEffect
 
-const SLOW_AMOUNT: float = 0.1
+@export var slow_amount: float
 
 var _modifier: RpgModifier
 
-func _init(initial_stacks: int) -> void:
-	super(&"slowed", initial_stacks)
+func apply() -> void:
 	_modifier = RpgModifier.new()
 	_modifier.type = RpgEnums.ModifierType.MULTIPLICATIVE
-	_modifier.value_callback = func(): return 1 - (SLOW_AMOUNT * stacks)
-
-func apply() -> void:
+	_modifier.value_callback = func(): return 1 - (slow_amount * stacks)
 	applied_to.get_stat(&"speed").add_modifier(_modifier)
 
 func remove() -> void:

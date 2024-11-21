@@ -1,5 +1,5 @@
-class_name ExampleSkill extends RpgTypedSkill
+class_name ExampleSkill extends RpgSkill
 
 enum TargetType {NONE, ONE_ENEMY, ONE_ALLY}
 
-var target_type: TargetType = TargetType.NONE
+@export var target_type: TargetType

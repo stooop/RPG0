@@ -16,12 +16,12 @@ func _ready() -> void:
 	RpgGameState.add_new_combatant(&"hero", RpgEnums.Team.PLAYER, 0) \
 		.add_default_stats() \
 		.add_default_combat_resources() \
-		.add_skill(SlashSkill.new())
+		.add_new_skill(&"slash", 1)
 	
 	RpgGameState.add_new_combatant(&"goblin", RpgEnums.Team.OPPONENT, 0) \
 		.add_default_stats() \
 		.add_default_combat_resources() \
-		.add_skill(SlashSkill.new())
+		.add_new_skill(&"slash", 1)
 	
 	_create_ui()
 	
@@ -118,40 +118,46 @@ func _register_static_data() -> void:
 	health_data.max_stat_binding = &"max_health"
 	RpgRegistry.register_combat_resource(health_data)
 	
-	var slash_data = RpgSkill.new()
+	var slash_data = SlashSkill.new()
 	slash_data.id = &"slash"
 	slash_data.name = "Slash"
 	slash_data.description = "Attack one enemy for {get_damage_floor()}-{get_damage_ceiling()} damage."
+	slash_data.target_type = ExampleSkill.TargetType.ONE_ENEMY
 	RpgRegistry.register_skill(slash_data)
 	
-	var poisoned_data = RpgStatusEffect.new()
+	var poisoned_data = PoisionedStatusEffect.new()
 	poisoned_data.id = &"poisoned"
 	poisoned_data.name = "Poisoned"
-	poisoned_data.description = "Each stack deals 1 damage every {TICKS_BETWEEN_DAMAGE} ticks {TOTAL_PROCS} times."
+	poisoned_data.description = "Each stack deals 1 damage every {ticks_between_damage} ticks {total_procs} times."
 	poisoned_data.is_negative = true
 	poisoned_data.max_stacks = 99
+	poisoned_data.ticks_between_damage = 50
+	poisoned_data.total_procs = 5
 	RpgRegistry.register_status_effect(poisoned_data)
 	
-	var slowed_data = RpgStatusEffect.new()
+	var slowed_data = SlowedStatusEffect.new()
 	slowed_data.id = &"slowed"
 	slowed_data.name = "Slowed"
-	slowed_data.description = "Each stack reduces speed by {SLOW_AMOUNT * 100}% for 1 turn."
+	slowed_data.description = "Each stack reduces speed by {slow_amount * 100}% for 1 turn."
 	slowed_data.is_negative = true
 	slowed_data.max_stacks = 5
+	slowed_data.slow_amount = 0.1
 	RpgRegistry.register_status_effect(slowed_data)
 	
-	var silenced_data = RpgStatusEffect.new()
+	var silenced_data = SilencedStatusEffect.new()
 	silenced_data.id = &"silenced"
 	silenced_data.name = "Silenced"
-	silenced_data.description = "Cannot take a turn for {DURATION} ticks."
+	silenced_data.description = "Cannot take a turn for {duration} ticks."
 	silenced_data.is_negative = true
 	silenced_data.max_stacks = 1
+	silenced_data.duration = 40
 	RpgRegistry.register_status_effect(silenced_data)
 	
-	var stunned_data = RpgStatusEffect.new()
+	var stunned_data = StunnedStatusEffect.new()
 	stunned_data.id = &"stunned"
 	stunned_data.name = "Stunned"
-	stunned_data.description = "Cannot gain AP for {DURATION} ticks."
+	stunned_data.description = "Cannot gain AP for {duration} ticks."
 	stunned_data.is_negative = true
 	stunned_data.max_stacks = 1
+	stunned_data.duration = 40
 	RpgRegistry.register_status_effect(stunned_data)

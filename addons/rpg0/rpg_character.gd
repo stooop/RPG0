@@ -118,6 +118,11 @@ func add_status_effect(status_effect: RpgStatusEffect) -> RpgCharacter:
 		existing.modify_stacks(status_effect.stacks)
 	return self
 
+func add_new_status_effect(id: StringName, stacks: int) -> RpgCharacter:
+	var status_effect = RpgRegistry.get_status_effect(id)
+	status_effect.stacks = stacks
+	return add_status_effect(status_effect)
+
 func get_status_effect(id: StringName) -> RpgStatusEffect:
 	var matching = status_effects.filter(func(x): return x.id == id)
 	if matching.is_empty():
