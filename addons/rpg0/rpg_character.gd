@@ -9,7 +9,7 @@ var team: RpgEnums.Team
 var experience: int
 var order: int # Used for some sorting. Generally meant to represent party position from left to right.
 var stats: Array[RpgStat] = []
-var combat_resources: Array[RpgCombatResource] = []
+var capabilities: Array[RpgCapability] = []
 var skills: Array[RpgSkill] = []
 var status_effects: Array[RpgStatusEffect] = []
 var action_points: int
@@ -41,7 +41,7 @@ func end_turn() -> void:
 
 # Override this if you use a different combat resource ID for HP
 func is_dead() -> bool:
-	return get_combat_resource(&"health").is_empty()
+	return get_capability(&"health").is_empty()
 
 # Can be overriden for a "silence" status effect
 func can_take_turn() -> bool:
@@ -51,21 +51,21 @@ func can_take_turn() -> bool:
 func can_gain_action_points() -> bool:
 	return !is_dead()
 
-func add_combat_resource(resource: RpgCombatResource) -> RpgCharacter:
-	combat_resources.push_back(resource)
+func add_capability(resource: RpgCapability) -> RpgCharacter:
+	capabilities.push_back(resource)
 	return self
 
-func add_new_combat_resource(id: StringName, initial_value: float) -> RpgCharacter:
-	var resource = RpgRegistry.get_combat_resource(id)
+func add_new_capability(id: StringName, initial_value: float) -> RpgCharacter:
+	var resource = RpgRegistry.get_capability(id)
 	if !resource.max_stat_binding.is_empty():
 		get_stat(resource.max_stat_binding).value_changed.connect(resource._on_bound_max_changed)
 	if !resource.min_stat_binding.is_empty():
 		get_stat(resource.min_stat_binding).value_changed.connect(resource._on_bound_min_changed)
 	resource.current_value = initial_value
-	return add_combat_resource(resource)
+	return add_capability(resource)
 
-func get_combat_resource(id: StringName) -> RpgCombatResource:
-	var matching = combat_resources.filter(func(x): return x.id == id)
+func get_capability(id: StringName) -> RpgCapability:
+	var matching = capabilities.filter(func(x): return x.id == id)
 	if matching.is_empty():
 		return null
 	return matching.front()
@@ -142,7 +142,7 @@ func modify_hp(amount: int, source: Variant = null) -> void:
 	if is_dead():
 		return
 	
-	get_combat_resource(&"health").current_value += amount
+	get_capability(&"health").current_value += amount
 	
 	if is_dead():
 		died.emit()

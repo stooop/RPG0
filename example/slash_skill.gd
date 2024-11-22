@@ -6,7 +6,7 @@ func use(targets: Array[RpgCharacter]) -> void:
 	assert(targets.size() == 1)
 	
 	var damage = randi_range(get_damage_floor(), get_damage_ceiling())
-	targets.front().modify_hp(-damage)
+	targets.front().modify_hp(-damage, user)
 	user.end_turn()
 
 func get_damage_floor() -> int:

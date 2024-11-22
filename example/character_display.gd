@@ -29,7 +29,7 @@ func _physics_process(_delta: float) -> void:
 		return
 	
 	name_label.text = character.name
-	hp_value_label.text = "%d/%d" % [character.get_combat_resource(&"health").current_value, character.get_stat(&"max_health").get_modified_value()]
+	hp_value_label.text = "%d/%d" % [character.get_capability(&"health").current_value, character.get_stat(&"max_health").get_modified_value()]
 	ap_value_label.text = "%d/%d" % [character.action_points, character.get_action_point_threshold()]
 
 func _on_turn_started() -> void:

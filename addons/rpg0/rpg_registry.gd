@@ -2,7 +2,7 @@ extends Node
 
 var _characters: Dictionary
 var _stats: Dictionary
-var _combat_resources: Dictionary
+var _capabilities: Dictionary
 var _skills: Dictionary
 var _status_effects: Dictionary
 
@@ -22,13 +22,13 @@ func get_stat(id: StringName) -> RpgStat:
 	assert(_stats.has(id), "Stat ID %s not found" % id)
 	return _duplicate_data(_stats[id])
 
-func register_combat_resource(data: RpgCombatResource) -> void:
-	assert(!_combat_resources.has(data.id), "Another combat resource with ID %s is already registered" % data.id)
-	_combat_resources[data.id] = data
+func register_capability(data: RpgCapability) -> void:
+	assert(!_capabilities.has(data.id), "Another combat resource with ID %s is already registered" % data.id)
+	_capabilities[data.id] = data
 
-func get_combat_resource(id: StringName) -> RpgCombatResource:
-	assert(_combat_resources.has(id), "Combat resource ID %s not found" % id)
-	return _duplicate_data(_combat_resources[id])
+func get_capability(id: StringName) -> RpgCapability:
+	assert(_capabilities.has(id), "Combat resource ID %s not found" % id)
+	return _duplicate_data(_capabilities[id])
 
 func register_skill(data: RpgSkill) -> void:
 	assert(!_skills.has(data.id), "Another skill with ID %s is already registered" % data.id)

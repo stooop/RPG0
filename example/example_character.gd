@@ -6,8 +6,8 @@ func add_default_stats() -> ExampleCharacter:
 	add_new_stat(&"attack")
 	return self
 
-func add_default_combat_resources() -> ExampleCharacter:
-	add_new_combat_resource(&"health", get_stat(&"max_health").get_modified_value())
+func add_default_capabilities() -> ExampleCharacter:
+	add_new_capability(&"health", get_stat(&"max_health").get_modified_value())
 	return self
 
 func can_take_turn() -> bool:

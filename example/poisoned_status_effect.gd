@@ -18,7 +18,7 @@ func modify_stacks(s: int) -> void:
 func tick() -> void:
 	_ticks_until_damage -= 1
 	if _ticks_until_damage <= 0:
-		applied_to.modify_hp(-stacks)
+		applied_to.modify_hp(-stacks, self)
 		_procs_remaining -= 1
 		_ticks_until_damage = ticks_between_damage
 	

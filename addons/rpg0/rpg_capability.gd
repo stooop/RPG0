@@ -1,4 +1,4 @@
-class_name RpgCombatResource extends Resource
+class_name RpgCapability extends Resource
 
 # Static data
 @export var id: StringName
@@ -25,20 +25,20 @@ func _init() -> void:
 	_current_max = absolute_max
 	_current_min = absolute_min
 
-# Connected in RpgCharacter.add_new_combat_resource()
+# Connected in RpgCharacter.add_new_capability()
 func _on_bound_max_changed(new_value: float) -> void:
 	assert(new_value <= absolute_max, "Absolute max should be higher than the bound stat")
 	_current_max = new_value
 	current_value = current_value # Looks silly but need to re-clamp
 
-# Connected in RpgCharacter.add_new_combat_resource()
+# Connected in RpgCharacter.add_new_capability()
 func _on_bound_min_changed(new_value: float) -> void:
 	assert(new_value >= absolute_min, "Absolute min should be lower than the bound stat")
 	_current_min = new_value
 	current_value = current_value # Looks silly but need to re-clamp
 
 # Override this for resources that work differently, e.g. generative resources like energy or armor
-func reset() -> RpgCombatResource:
+func reset() -> RpgCapability:
 	current_value = _current_max
 	return self
 

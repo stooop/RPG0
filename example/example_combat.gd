@@ -15,12 +15,12 @@ func _ready() -> void:
 	# Set up characters. Normally I recommend you maintain a "party array" that you can pass directly into start_combat()
 	RpgGameState.add_new_combatant(&"hero", RpgEnums.Team.PLAYER, 0) \
 		.add_default_stats() \
-		.add_default_combat_resources() \
+		.add_default_capabilities() \
 		.add_new_skill(&"slash", 1)
 	
 	RpgGameState.add_new_combatant(&"goblin", RpgEnums.Team.OPPONENT, 0) \
 		.add_default_stats() \
-		.add_default_combat_resources() \
+		.add_default_capabilities() \
 		.add_new_skill(&"slash", 1)
 	
 	_create_ui()
@@ -110,13 +110,13 @@ func _register_static_data() -> void:
 	attack_data.max_value = 99
 	RpgRegistry.register_stat(attack_data)
 	
-	var health_data = RpgCombatResource.new()
+	var health_data = RpgCapability.new()
 	health_data.id = &"health"
 	health_data.name = "Health"
 	health_data.absolute_min = 0
 	health_data.absolute_max = 9999
 	health_data.max_stat_binding = &"max_health"
-	RpgRegistry.register_combat_resource(health_data)
+	RpgRegistry.register_capability(health_data)
 	
 	var slash_data = SlashSkill.new()
 	slash_data.id = &"slash"
