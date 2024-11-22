@@ -129,7 +129,6 @@ func _register_static_data() -> void:
 	poisoned_data.id = &"poisoned"
 	poisoned_data.name = "Poisoned"
 	poisoned_data.description = "Each stack deals 1 damage every {ticks_between_damage} ticks {total_procs} times."
-	poisoned_data.is_negative = true
 	poisoned_data.max_stacks = 99
 	poisoned_data.ticks_between_damage = 50
 	poisoned_data.total_procs = 5
@@ -139,7 +138,6 @@ func _register_static_data() -> void:
 	slowed_data.id = &"slowed"
 	slowed_data.name = "Slowed"
 	slowed_data.description = "Each stack reduces speed by {slow_amount * 100}% for 1 turn."
-	slowed_data.is_negative = true
 	slowed_data.max_stacks = 5
 	slowed_data.slow_amount = 0.1
 	RpgRegistry.register_status_effect(slowed_data)
@@ -148,7 +146,6 @@ func _register_static_data() -> void:
 	silenced_data.id = &"silenced"
 	silenced_data.name = "Silenced"
 	silenced_data.description = "Cannot take a turn for {duration} ticks."
-	silenced_data.is_negative = true
 	silenced_data.max_stacks = 1
 	silenced_data.duration = 40
 	RpgRegistry.register_status_effect(silenced_data)
@@ -157,7 +154,6 @@ func _register_static_data() -> void:
 	stunned_data.id = &"stunned"
 	stunned_data.name = "Stunned"
 	stunned_data.description = "Cannot gain AP for {duration} ticks."
-	stunned_data.is_negative = true
 	stunned_data.max_stacks = 1
 	stunned_data.duration = 40
 	RpgRegistry.register_status_effect(stunned_data)

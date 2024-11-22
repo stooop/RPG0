@@ -4,7 +4,6 @@ class_name RpgStatusEffect extends Resource
 @export var id: StringName
 @export var name: String
 @export_multiline var description: String
-@export var is_negative: bool
 @export var max_stacks: int = 1
 
 var stacks: int

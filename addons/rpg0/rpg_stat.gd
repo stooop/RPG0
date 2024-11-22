@@ -22,7 +22,7 @@ func add_modifier(modifier: RpgModifier) -> RpgStat:
 
 func remove_modifier(modifier: RpgModifier) -> void:
 	var previous_value = get_modified_value()
-	modifiers.remove_at(modifiers.find(modifier))
+	modifiers.erase(modifier)
 	modifiers.sort_custom(func(a, b): return a.type < b.type)
 	var new_value = get_modified_value()
 	if !is_equal_approx(new_value, previous_value):

@@ -14,15 +14,19 @@ var skills: Array[RpgSkill] = []
 var status_effects: Array[RpgStatusEffect] = []
 var action_points: int
 
-signal turn_started # Fires after RpgGameState.turn_started
+signal turn_ready
+signal turn_started
 signal turn_ended
 signal used_skill(skill: RpgSkill, targets: Array[RpgCharacter]) # Fires after RpgSkill.used
+signal died
 
 func tick() -> void:
 	for effect in status_effects:
 		effect.tick()
 	if can_gain_action_points():
 		action_points += 1
+		if can_take_turn():
+			turn_ready.emit()
 
 # Can be overridden to handle a character's turn starting, e.g. with UI
 func start_turn() -> void:
@@ -33,7 +37,6 @@ func start_turn() -> void:
 # Call this after a character's turn is over
 func end_turn() -> void:
 	action_points = 0
-	RpgGameState.do_ticks = true
 	turn_ended.emit()
 
 # Override this if you use a different combat resource ID for HP
@@ -132,11 +135,17 @@ func get_status_effect(id: StringName) -> RpgStatusEffect:
 func remove_status_effect(id: StringName) -> void:
 	var matching = get_status_effect(id)
 	assert(matching, "Tried to remove a nonexistent status effect %s" % id)
-	status_effects.remove_at(status_effects.find(matching))
+	status_effects.erase(matching)
 
 # Heal or damage, override this if you use a different combat resource ID for HP or to add logic for resistances, etc.
-func modify_hp(amount: int) -> void:
+func modify_hp(amount: int, source: Variant = null) -> void:
+	if is_dead():
+		return
+	
 	get_combat_resource(&"health").current_value += amount
+	
+	if is_dead():
+		died.emit()
 
 # Fast way to get a character's speed for turn order purposes, can also be overriden if you don't want to use a speed stat
 func get_speed() -> float:
