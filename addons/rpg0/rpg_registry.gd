@@ -4,7 +4,7 @@ var _characters: Dictionary
 var _stats: Dictionary
 var _capabilities: Dictionary
 var _skills: Dictionary
-var _status_effects: Dictionary
+var _statuses: Dictionary
 
 func register_character(data: RpgCharacter) -> void:
 	assert(!_characters.has(data.id), "Another character with ID %s is already registered" % data.id)
@@ -38,13 +38,13 @@ func get_skill(id: StringName) -> RpgSkill:
 	assert(_skills.has(id), "Skill ID %s not found" % id)
 	return _duplicate_data(_skills[id])
 
-func register_status_effect(data: RpgStatusEffect) -> void:
-	assert(!_status_effects.has(data.id), "Another status effect with ID %s is already registered" % data.id)
-	_status_effects[data.id] = data
+func register_status(data: RpgStatus) -> void:
+	assert(!_statuses.has(data.id), "Another status effect with ID %s is already registered" % data.id)
+	_statuses[data.id] = data
 
-func get_status_effect(id: StringName) -> RpgStatusEffect:
-	assert(_status_effects.has(id), "Status effect ID %s not found" % id)
-	return _duplicate_data(_status_effects[id])
+func get_status(id: StringName) -> RpgStatus:
+	assert(_statuses.has(id), "Status effect ID %s not found" % id)
+	return _duplicate_data(_statuses[id])
 
 # There's some issue with Resource.duplicate() missing properties in derived classes, so I'm just rolling my own deep copy method for now
 func _duplicate_data(data_object: Object) -> Variant:

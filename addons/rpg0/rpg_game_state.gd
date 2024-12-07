@@ -14,17 +14,18 @@ func _physics_process(_delta: float) -> void:
 	if !is_combat_active or !do_ticks:
 		return
 	
-	if _ready_combatants.is_empty():
+	if _ready_combatants.any(func(x): return x.can_take_turn()):
+		# Set up for character's turn, can be handled using signal or overridden RpgCharacter.start_turn()
+		do_ticks = false
+		_sort_characters_by_speed(_ready_combatants)
+		var character = _ready_combatants.filter(func(x): return x.can_take_turn()).front() # It's possible that a fast character with max AP is currently unable to take a turn (is e.g. stunned or silenced)
+		_ready_combatants.erase(character)
+		character.start_turn()
+	else:
 		# Tick all combatants
 		combat_tick += 1
 		for character in combatants:
 			character.tick()
-	else:
-		# Set up for character's turn, can be handled using signal or overridden RpgCharacter.start_turn()
-		do_ticks = false
-		_sort_characters_by_speed(_ready_combatants)
-		var character = _ready_combatants.pop_front()
-		character.start_turn()
 
 # Start combat with characters added previously and/or passed to this function
 func start_combat(characters: Array[RpgCharacter] = []) -> void:

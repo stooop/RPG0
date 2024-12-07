@@ -11,7 +11,7 @@ func add_default_capabilities() -> ExampleCharacter:
 	return self
 
 func can_take_turn() -> bool:
-	return super() and !get_status_effect(&"silenced")
+	return super() and !get_status(&"silenced") and !get_status(&"stunned")
 
 func can_gain_action_points() -> bool:
-	return super() and !get_status_effect(&"stunned")
+	return super() and !get_status(&"stunned")

@@ -3,6 +3,7 @@ class_name RpgCharacter extends Resource
 # Static data
 @export var id: StringName
 @export var name: String
+@export_multiline var description: String
 @export var base_stats: Dictionary # Keys are RpgStat IDs, values will be used in add_new_stat()
 
 var team: RpgEnums.Team
@@ -11,27 +12,26 @@ var order: int # Used for some sorting. Generally meant to represent party posit
 var stats: Array[RpgStat] = []
 var capabilities: Array[RpgCapability] = []
 var skills: Array[RpgSkill] = []
-var status_effects: Array[RpgStatusEffect] = []
+var statuses: Array[RpgStatus] = []
 var action_points: int
 
 signal turn_ready
 signal turn_started
 signal turn_ended
+signal ticked
 signal used_skill(skill: RpgSkill, targets: Array[RpgCharacter]) # Fires after RpgSkill.used
+signal hp_changed
 signal died
 
 func tick() -> void:
-	for effect in status_effects:
-		effect.tick()
 	if can_gain_action_points():
 		action_points += 1
 		if can_take_turn():
 			turn_ready.emit()
+	ticked.emit()
 
 # Can be overridden to handle a character's turn starting, e.g. with UI
 func start_turn() -> void:
-	for effect in status_effects:
-		effect.on_turn_start()
 	turn_started.emit()
 
 # Call this after a character's turn is over
@@ -109,33 +109,33 @@ func get_skill_by_tier(id: StringName, tier: int) -> RpgSkill:
 		return null
 	return matching.front()
 
-func add_status_effect(status_effect: RpgStatusEffect) -> RpgCharacter:
-	var existing = get_status_effect(status_effect.id)
+func add_status(status: RpgStatus) -> RpgCharacter:
+	var existing = get_status(status.id)
 	if !existing:
-		status_effects.push_back(status_effect)
-		if status_effect.stacks == 0:
-			status_effect.stacks = 1
-		status_effect.applied_to = self
-		status_effect.apply()
+		statuses.push_back(status)
+		if status.stacks == 0:
+			status.stacks = 1
+		status.applied_to = self
+		status.apply()
 	else:
-		existing.modify_stacks(status_effect.stacks)
+		existing.modify_stacks(status.stacks)
 	return self
 
-func add_new_status_effect(id: StringName, stacks: int) -> RpgCharacter:
-	var status_effect = RpgRegistry.get_status_effect(id)
-	status_effect.stacks = stacks
-	return add_status_effect(status_effect)
+func add_new_status(id: StringName, stacks: int) -> RpgCharacter:
+	var status = RpgRegistry.get_status(id)
+	status.stacks = stacks
+	return add_status(status)
 
-func get_status_effect(id: StringName) -> RpgStatusEffect:
-	var matching = status_effects.filter(func(x): return x.id == id)
+func get_status(id: StringName) -> RpgStatus:
+	var matching = statuses.filter(func(x): return x.id == id)
 	if matching.is_empty():
 		return null
 	return matching.front()
 
-func remove_status_effect(id: StringName) -> void:
-	var matching = get_status_effect(id)
-	assert(matching, "Tried to remove a nonexistent status effect %s" % id)
-	status_effects.erase(matching)
+func remove_status(id: StringName) -> void:
+	var matching = get_status(id)
+	assert(matching, "Tried to remove a nonexistent status %s" % id)
+	statuses.erase(matching)
 
 # Heal or damage, override this if you use a different combat resource ID for HP or to add logic for resistances, etc.
 func modify_hp(amount: int, source: Variant = null) -> void:
@@ -143,6 +143,7 @@ func modify_hp(amount: int, source: Variant = null) -> void:
 		return
 	
 	get_capability(&"health").current_value += amount
+	hp_changed.emit()
 	
 	if is_dead():
 		died.emit()
@@ -153,3 +154,6 @@ func get_speed() -> float:
 
 func get_action_point_threshold() -> int:
 	return (60 * RpgConstants.base_speed) / get_speed()
+
+func get_interpolated_description() -> String:
+	return RpgUtils.interpolate_formatted_string(description, self)

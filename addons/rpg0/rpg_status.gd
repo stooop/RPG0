@@ -1,4 +1,4 @@
-class_name RpgStatusEffect extends Resource
+class_name RpgStatus extends Resource
 
 # Static data
 @export var id: StringName
@@ -6,23 +6,19 @@ class_name RpgStatusEffect extends Resource
 @export_multiline var description: String
 @export var max_stacks: int = 1
 
+var effect: RpgTriggeredEffect = RpgTriggeredEffect.new()
 var stacks: int
-var applied_to: RpgCharacter # Assigned in RpgCharacter.add_status_effect()
+var applied_to: RpgCharacter # Assigned in RpgCharacter.add_status()
 
 func apply() -> void:
-	pass
+	effect.connect_all(applied_to)
 
 func modify_stacks(s: int) -> void:
 	stacks = clampi(stacks + s, 0, max_stacks)
 
 func remove() -> void:
-	applied_to.remove_status_effect(id)
-
-func on_turn_start() -> void:
-	pass
-
-func tick() -> void:
-	pass
+	effect.disconnect_all()
+	applied_to.remove_status(id)
 
 func get_interpolated_description() -> String:
 	return RpgUtils.interpolate_formatted_string(description, self)
