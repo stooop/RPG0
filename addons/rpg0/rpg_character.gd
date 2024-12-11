@@ -22,13 +22,14 @@ signal ticked
 signal used_skill(skill: RpgSkill, targets: Array[RpgCharacter]) # Fires after RpgSkill.used
 signal hp_changed
 signal died
+signal statuses_changed
 
 func tick() -> void:
+	ticked.emit()
 	if can_gain_action_points():
 		action_points += 1
 		if can_take_turn():
 			turn_ready.emit()
-	ticked.emit()
 
 # Can be overridden to handle a character's turn starting, e.g. with UI
 func start_turn() -> void:
@@ -39,7 +40,7 @@ func end_turn() -> void:
 	action_points = 0
 	turn_ended.emit()
 
-# Override this if you use a different combat resource ID for HP
+# Override this if you use a different capability ID for HP
 func is_dead() -> bool:
 	return get_capability(&"health").is_empty()
 
@@ -117,11 +118,15 @@ func add_status(status: RpgStatus) -> RpgCharacter:
 			status.stacks = 1
 		status.applied_to = self
 		status.apply()
+		statuses_changed.emit()
 	else:
+		var old_stacks = existing.stacks
 		existing.modify_stacks(status.stacks)
+		if existing.stacks != old_stacks:
+			statuses_changed.emit()
 	return self
 
-func add_new_status(id: StringName, stacks: int) -> RpgCharacter:
+func add_new_status(id: StringName, stacks: int = 1) -> RpgCharacter:
 	var status = RpgRegistry.get_status(id)
 	status.stacks = stacks
 	return add_status(status)
@@ -136,10 +141,11 @@ func remove_status(id: StringName) -> void:
 	var matching = get_status(id)
 	assert(matching, "Tried to remove a nonexistent status %s" % id)
 	statuses.erase(matching)
+	statuses_changed.emit()
 
-# Heal or damage, override this if you use a different combat resource ID for HP or to add logic for resistances, etc.
+# Heal or damage, override this if you use a different capability ID for HP or to add logic for resistances, etc.
 func modify_hp(amount: int, source: Variant = null) -> void:
-	if is_dead():
+	if is_dead() or amount == 0:
 		return
 	
 	get_capability(&"health").current_value += amount

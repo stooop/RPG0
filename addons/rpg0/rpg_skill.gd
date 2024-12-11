@@ -13,10 +13,14 @@ signal used(source: RpgCharacter, targets: Array[RpgCharacter])
 
 # Override this to implement skill behavior
 func use(targets: Array[RpgCharacter]) -> void:
-	if !RpgGameState.is_combat_active and !can_use_outside_combat:
+	if !can_use():
 		return
 	
 	used.emit(user, targets)
+
+# Override to add requirements/costs to skill use
+func can_use() -> bool:
+	return RpgGameState.is_combat_active or can_use_outside_combat
 
 func get_interpolated_description() -> String:
 	return RpgUtils.interpolate_formatted_string(description, self)

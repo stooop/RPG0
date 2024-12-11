@@ -13,23 +13,31 @@ func _ready() -> void:
 	_register_static_data()
 	
 	# Set up characters. Normally I recommend you maintain a "party array" that you can pass directly into start_combat()
-	RpgGameState.add_new_combatant(&"hero", RpgEnums.Team.PLAYER, 0) \
-		.add_default_stats() \
+	var hero = RpgRegistry.get_character(&"hero")
+	hero.team = RpgEnums.Team.PLAYER
+	hero.order = 0
+	hero.add_default_stats() \
 		.add_default_capabilities() \
-		.add_new_skill(&"slash", 1)
+		.add_new_skill(&"slash", 1) \
+		.add_new_skill(&"fortify", 1)
 	
 	RpgGameState.add_new_combatant(&"goblin", RpgEnums.Team.OPPONENT, 0) \
 		.add_default_stats() \
 		.add_default_capabilities() \
 		.add_new_skill(&"slash", 1)
 	
-	_create_ui()
+	RpgGameState.add_new_combatant(&"goblin", RpgEnums.Team.OPPONENT, 1) \
+		.add_default_stats() \
+		.add_default_capabilities() \
+		.add_new_skill(&"slash", 1)
 	
 	# Set up monster behavior (very basic, but gives you an idea of how it could work with more complex AI)
 	for character in RpgGameState.get_combatants(RpgEnums.Team.OPPONENT):
 		character.turn_started.connect(func(): _on_opponent_turn_started(character))
 	
-	RpgGameState.start_combat()
+	RpgGameState.start_combat([hero])
+	
+	_create_ui()
 
 func _create_ui() -> void:
 	for character in RpgGameState.get_combatants(RpgEnums.Team.PLAYER):
@@ -71,7 +79,7 @@ func _on_character_display_clicked(character: ExampleCharacter) -> void:
 			assert(false)
 
 func _on_opponent_turn_started(character: ExampleCharacter) -> void:
-	var skill = character.skills.pick_random()
+	var skill = character.skills.filter(func(x): return x.can_use()).pick_random()
 	var targets: Array[RpgCharacter] = [RpgGameState.get_combatants(RpgEnums.Team.PLAYER).pick_random()]
 	skill.use(targets)
 
@@ -80,13 +88,13 @@ func _register_static_data() -> void:
 	var hero_data = ExampleCharacter.new()
 	hero_data.id = &"hero"
 	hero_data.name = "Hero"
-	hero_data.base_stats = {"speed": 100, "max_health": 100, "attack": 10}
+	hero_data.base_stats = {"speed": 100, "max_health": 100, "max_mana": 100, "attack": 10}
 	RpgRegistry.register_character(hero_data)
 	
 	var goblin_data = ExampleCharacter.new()
 	goblin_data.id = &"goblin"
 	goblin_data.name = "Goblin"
-	goblin_data.base_stats = {"speed": 75, "max_health": 50, "attack": 3}
+	goblin_data.base_stats = {"speed": 75, "max_health": 50, "max_mana": 25, "attack": 3}
 	RpgRegistry.register_character(goblin_data)
 	
 	var speed_data = RpgStat.new()
@@ -103,6 +111,13 @@ func _register_static_data() -> void:
 	max_health_data.max_value = 9999
 	RpgRegistry.register_stat(max_health_data)
 	
+	var max_mana_data = RpgStat.new()
+	max_mana_data.id = &"max_mana"
+	max_mana_data.name = "Wisdom"
+	max_mana_data.min_value = 1
+	max_mana_data.max_value = 9999
+	RpgRegistry.register_stat(max_mana_data)
+	
 	var attack_data = RpgStat.new()
 	attack_data.id = &"attack"
 	attack_data.name = "Attack"
@@ -118,12 +133,35 @@ func _register_static_data() -> void:
 	health_data.max_stat_binding = &"max_health"
 	RpgRegistry.register_capability(health_data)
 	
+	var mana_data = RpgCapability.new()
+	mana_data.id = &"mana"
+	mana_data.name = "Mana"
+	mana_data.absolute_min = 0
+	mana_data.absolute_max = 9999
+	mana_data.max_stat_binding = &"max_mana"
+	RpgRegistry.register_capability(mana_data)
+	
+	var spirit_shield_data = RpgCapability.new()
+	spirit_shield_data.id = &"spirit_shield"
+	spirit_shield_data.name = "Spirit Shield"
+	spirit_shield_data.absolute_min = 0
+	spirit_shield_data.absolute_max = 9999
+	RpgRegistry.register_capability(spirit_shield_data)
+	
 	var slash_data = SlashSkill.new()
 	slash_data.id = &"slash"
 	slash_data.name = "Slash"
 	slash_data.description = "Attack one enemy for {get_damage_floor()}-{get_damage_ceiling()} damage."
 	slash_data.target_type = ExampleSkill.TargetType.ONE_ENEMY
 	RpgRegistry.register_skill(slash_data)
+	
+	var fortify_data = FortifySkill.new()
+	fortify_data.id = &"fortify"
+	fortify_data.name = "Fortify"
+	fortify_data.description = "Gain {get_shield_amount()} spirit shield."
+	fortify_data.cost = {&"mana": 10}
+	fortify_data.target_type = ExampleSkill.TargetType.SELF
+	RpgRegistry.register_skill(fortify_data)
 	
 	var poisoned_data = PoisionedStatus.new()
 	poisoned_data.id = &"poisoned"
@@ -157,3 +195,11 @@ func _register_static_data() -> void:
 	stunned_data.max_stacks = 1
 	stunned_data.duration = 40
 	RpgRegistry.register_status(stunned_data)
+	
+	var spirit_shielded_data = SpiritShieldedStatus.new()
+	spirit_shielded_data.id = &"spirit_shielded"
+	spirit_shielded_data.name = "Spirit Shielded"
+	spirit_shielded_data.description = "Spirit shield absorbs damage and decays by 1 every {ticks_between_decay} ticks."
+	spirit_shielded_data.max_stacks = 1
+	spirit_shielded_data.ticks_between_decay = 60
+	RpgRegistry.register_status(spirit_shielded_data)

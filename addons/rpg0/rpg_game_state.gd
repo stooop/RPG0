@@ -85,9 +85,11 @@ func get_combatants(team: RpgEnums.Team) -> Array[RpgCharacter]:
 	to_return.sort_custom(func(a, b): return a.order < b.order)
 	return to_return
 
-func _sort_characters_by_speed(characters: Array) -> void:
+func _sort_characters_by_speed(characters: Array[RpgCharacter]) -> void:
 	# Includes secondary sorting by team and order to guarantee stable/unique sorting
-	characters.sort_custom(func(a, b): return a.get_speed() >= b.get_speed() and a.team <= b.team and a.order < b.order)
+	characters.sort_custom(func(a, b): return a.get_speed() > b.get_speed() or \
+		(a.get_speed() == b.get_speed() and a.team < b.team) or \
+		(a.get_speed() == b.get_speed() and a.team == b.team and a.order < b.order))
 
 func _check_for_winner() -> void:
 	var living_teams = RpgEnums.Team.values()
