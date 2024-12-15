@@ -3,7 +3,7 @@ class_name ExampleSkill extends RpgSkill
 enum TargetType {NONE, ONE_ENEMY, ONE_ALLY, SELF}
 
 @export var target_type: TargetType
-@export var cost: Dictionary # Keys are capability IDs, values are the cost amounts
+@export var cost: Dictionary # Keys are capability IDs, values are the cost amounts. Assumes costs are static
 
 func use(targets: Array[RpgCharacter]) -> void:
 	# Have to check this here because it normally wouldn't be checked until after the capabilities are modified

@@ -6,6 +6,8 @@ extends Control
 @onready var hp_value_label: Label = $MainPanelContainer/HBoxContainer/CapabilitiesContainer/HpContainer/ValueLabel
 @onready var mp_value_label: Label = $MainPanelContainer/HBoxContainer/CapabilitiesContainer/MpContainer/ValueLabel
 @onready var ap_value_label: Label = $MainPanelContainer/HBoxContainer/CapabilitiesContainer/ApContainer/ValueLabel
+@onready var ammo_container: HBoxContainer = $MainPanelContainer/HBoxContainer/CapabilitiesContainer/AmmoContainer
+@onready var ammo_value_label: Label = $MainPanelContainer/HBoxContainer/CapabilitiesContainer/AmmoContainer/ValueLabel
 @onready var button_containers: TabContainer = $ButtonContainers
 @onready var skill_buttons_container: VBoxContainer = $ButtonContainers/Skills
 @onready var skills_button: Button = $ButtonContainers/TopLevel/SkillsButton
@@ -40,6 +42,11 @@ func _physics_process(_delta: float) -> void:
 	var spirit_shield = character.get_capability(&"spirit_shield")
 	if spirit_shield and spirit_shield.current_value > 0:
 		hp_value_label.text += " (+%d)" % spirit_shield.current_value
+	
+	var ammo = character.get_capability(&"ammo")
+	if ammo:
+		ammo_container.visible = true
+		ammo_value_label.text = "%d/6" % ammo.current_value
 
 func _on_turn_started() -> void:
 	if character.team != RpgEnums.Team.PLAYER:

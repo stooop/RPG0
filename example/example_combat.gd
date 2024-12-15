@@ -21,6 +21,17 @@ func _ready() -> void:
 		.add_new_skill(&"slash", 1) \
 		.add_new_skill(&"fortify", 1)
 	
+	var cowboy = RpgRegistry.get_character(&"cowboy")
+	cowboy.team = RpgEnums.Team.PLAYER
+	cowboy.order = 1
+	cowboy.add_default_stats() \
+		.add_default_capabilities() \
+		.add_new_capability(&"ammo", 6) \
+		.add_new_skill(&"shoot", 1) \
+		.add_new_skill(&"reload", 1) \
+		.add_new_skill(&"drink", 1) \
+		.add_new_skill(&"lasso", 1)
+	
 	RpgGameState.add_new_combatant(&"goblin", RpgEnums.Team.OPPONENT, 0) \
 		.add_default_stats() \
 		.add_default_capabilities() \
@@ -35,7 +46,7 @@ func _ready() -> void:
 	for character in RpgGameState.get_combatants(RpgEnums.Team.OPPONENT):
 		character.turn_started.connect(func(): _on_opponent_turn_started(character))
 	
-	RpgGameState.start_combat([hero])
+	RpgGameState.start_combat([hero, cowboy])
 	
 	_create_ui()
 
@@ -90,6 +101,12 @@ func _register_static_data() -> void:
 	hero_data.name = "Hero"
 	hero_data.base_stats = {"speed": 100, "max_health": 100, "max_mana": 100, "attack": 10}
 	RpgRegistry.register_character(hero_data)
+	
+	var cowboy_data = ExampleCharacter.new()
+	cowboy_data.id = &"cowboy"
+	cowboy_data.name = "Cowboy"
+	cowboy_data.base_stats = {"speed": 105, "max_health": 80, "max_mana": 50, "attack": 15}
+	RpgRegistry.register_character(cowboy_data)
 	
 	var goblin_data = ExampleCharacter.new()
 	goblin_data.id = &"goblin"
@@ -148,6 +165,13 @@ func _register_static_data() -> void:
 	spirit_shield_data.absolute_max = 9999
 	RpgRegistry.register_capability(spirit_shield_data)
 	
+	var ammo_data = RpgCapability.new()
+	ammo_data.id = &"ammo"
+	ammo_data.name = "Ammo"
+	ammo_data.absolute_min = 0
+	ammo_data.absolute_max = 6
+	RpgRegistry.register_capability(ammo_data)
+	
 	var slash_data = SlashSkill.new()
 	slash_data.id = &"slash"
 	slash_data.name = "Slash"
@@ -162,6 +186,38 @@ func _register_static_data() -> void:
 	fortify_data.cost = {&"mana": 10}
 	fortify_data.target_type = ExampleSkill.TargetType.SELF
 	RpgRegistry.register_skill(fortify_data)
+	
+	var shoot_skill = ShootSkill.new()
+	shoot_skill.id = &"shoot"
+	shoot_skill.name = "Shoot"
+	shoot_skill.description = "Attack one enemy for {get_damage_amount()} damage. If the target is slowed or stunned, deal an additional {get_bonus_damage_amount()} damage."
+	shoot_skill.cost = {&"ammo": 1}
+	shoot_skill.target_type = ExampleSkill.TargetType.ONE_ENEMY
+	shoot_skill.bonus_damage_percent = 0.5
+	RpgRegistry.register_skill(shoot_skill)
+	
+	var reload_skill = ReloadSkill.new()
+	reload_skill.id = &"reload"
+	reload_skill.name = "Reload"
+	reload_skill.description = "Reload to full ammo."
+	reload_skill.cost = {&"mana": 20}
+	reload_skill.target_type = ExampleSkill.TargetType.SELF
+	RpgRegistry.register_skill(reload_skill)
+	
+	var drink_skill = DrinkSkill.new()
+	drink_skill.id = &"drink"
+	drink_skill.name = "Drink"
+	drink_skill.description = "Restore {get_restoration_amount()} mana and gain 1 stack of tipsy."
+	drink_skill.target_type = ExampleSkill.TargetType.SELF
+	RpgRegistry.register_skill(drink_skill)
+	
+	var lasso_skill = LassoSkill.new()
+	lasso_skill.id = &"lasso"
+	lasso_skill.name = "Lasso"
+	lasso_skill.description = "Inflict 1 stack of slowed."
+	lasso_skill.cost = {&"mana": 10}
+	lasso_skill.target_type = ExampleSkill.TargetType.ONE_ENEMY
+	RpgRegistry.register_skill(lasso_skill)
 	
 	var poisoned_data = PoisionedStatus.new()
 	poisoned_data.id = &"poisoned"
@@ -203,3 +259,11 @@ func _register_static_data() -> void:
 	spirit_shielded_data.max_stacks = 1
 	spirit_shielded_data.ticks_between_decay = 60
 	RpgRegistry.register_status(spirit_shielded_data)
+	
+	var tipsy_data = TipsyStatus.new()
+	tipsy_data.id = &"tipsy"
+	tipsy_data.name = "Tipsy"
+	tipsy_data.description = "Each stack reduces attack by {damage_reduction_amount * 100}%."
+	tipsy_data.max_stacks = 5
+	tipsy_data.damage_reduction_amount = 0.15
+	RpgRegistry.register_status(tipsy_data)

@@ -10,7 +10,7 @@ func apply() -> void:
 	_modifier.value_callback = func(): return 1 - (slow_amount * stacks)
 	applied_to.get_stat(&"speed").add_modifier(_modifier)
 	
-	effect.turn_start_callback = func(): remove()
+	effect.turn_start_callback = remove
 	super()
 
 func remove() -> void:

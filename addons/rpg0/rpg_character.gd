@@ -52,18 +52,20 @@ func can_take_turn() -> bool:
 func can_gain_action_points() -> bool:
 	return !is_dead()
 
-func add_capability(resource: RpgCapability) -> RpgCharacter:
-	capabilities.push_back(resource)
+func add_capability(capability: RpgCapability) -> RpgCharacter:
+	capabilities.push_back(capability)
 	return self
 
 func add_new_capability(id: StringName, initial_value: float) -> RpgCharacter:
-	var resource = RpgRegistry.get_capability(id)
-	if !resource.max_stat_binding.is_empty():
-		get_stat(resource.max_stat_binding).value_changed.connect(resource._on_bound_max_changed)
-	if !resource.min_stat_binding.is_empty():
-		get_stat(resource.min_stat_binding).value_changed.connect(resource._on_bound_min_changed)
-	resource.current_value = initial_value
-	return add_capability(resource)
+	var capability = RpgRegistry.get_capability(id)
+	if !capability.max_stat_binding.is_empty():
+		get_stat(capability.max_stat_binding).value_changed.connect(capability.set_bound_max)
+		capability.set_bound_max(get_stat(capability.max_stat_binding).get_modified_value())
+	if !capability.min_stat_binding.is_empty():
+		get_stat(capability.min_stat_binding).value_changed.connect(capability.set_bound_min)
+		capability.set_bound_min(get_stat(capability.min_stat_binding).get_modified_value())
+	capability.current_value = initial_value
+	return add_capability(capability)
 
 func get_capability(id: StringName) -> RpgCapability:
 	var matching = capabilities.filter(func(x): return x.id == id)
@@ -144,15 +146,18 @@ func remove_status(id: StringName) -> void:
 	statuses_changed.emit()
 
 # Heal or damage, override this if you use a different capability ID for HP or to add logic for resistances, etc.
-func modify_hp(amount: int, source: Variant = null) -> void:
+# By default returns the damage done. In subclasses you can subtract out reduction from resistances, etc. or change the return type to be a more complex "damage report"
+func modify_hp(amount: int, source: Variant = null) -> Variant:
 	if is_dead() or amount == 0:
-		return
+		return 0
 	
 	get_capability(&"health").current_value += amount
 	hp_changed.emit()
 	
 	if is_dead():
 		died.emit()
+	
+	return amount
 
 # Fast way to get a character's speed for turn order purposes, can also be overriden if you don't want to use a speed stat
 func get_speed() -> float:

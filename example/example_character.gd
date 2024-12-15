@@ -19,9 +19,9 @@ func can_take_turn() -> bool:
 func can_gain_action_points() -> bool:
 	return super() and !get_status(&"stunned")
 
-func modify_hp(amount: int, source: Variant = null) -> void:
+func modify_hp(amount: int, source: Variant = null) -> Variant:
 	if is_dead():
-		return
+		return super(0, source)
 	
 	var mitigated = 0
 	if amount < 0:
@@ -31,3 +31,4 @@ func modify_hp(amount: int, source: Variant = null) -> void:
 			spirit_shield.current_value -= mitigated
 	
 	super(amount + mitigated, source)
+	return amount # Returning the full amount including mitigated because the character was still damaged that amount

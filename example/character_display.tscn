@@ -98,6 +98,19 @@ text = "AP"
 layout_mode = 2
 text = "9999/9999"
 
+[node name="AmmoContainer" type="HBoxContainer" parent="MainPanelContainer/HBoxContainer/CapabilitiesContainer"]
+visible = false
+layout_mode = 2
+alignment = 1
+
+[node name="ResourceLabel" type="Label" parent="MainPanelContainer/HBoxContainer/CapabilitiesContainer/AmmoContainer"]
+layout_mode = 2
+text = "AMMO"
+
+[node name="ValueLabel" type="Label" parent="MainPanelContainer/HBoxContainer/CapabilitiesContainer/AmmoContainer"]
+layout_mode = 2
+text = "6/6"
+
 [node name="StatusContainer" type="HFlowContainer" parent="."]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
